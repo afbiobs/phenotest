@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saltmarsh Phenology & Climate Change Impacts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F0F4F8; /* Light neutral background */
+        }
+        /* Selected Palette: Energetic & Playful */
+        /* Primary Text: #073B4C (Dark Blue/Teal) */
+        /* Accent 1 (Red): #FF6B6B */
+        /* Accent 2 (Yellow): #FFD166 */
+        /* Accent 3 (Green): #06D6A0 */
+        /* Accent 4 (Blue): #118AB2 */
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width for readability */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 350px; /* Max height */
+        }
+        @media (min-width: 768px) {
+            .chart-wrapper {
+                height: 350px;
+                max-height: 400px;
+            }
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #118AB2; /* Accent Blue */
+        }
+        .stat-label {
+            font-size: 1rem;
+            color: #073B4C; /* Dark Blue/Teal */
+        }
+        .section-title {
+            color: #073B4C; /* Dark Blue/Teal */
+            border-bottom: 3px solid #06D6A0; /* Accent Green */
+            padding-bottom: 0.5rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .pheno-stage {
+            border: 2px solid #118AB2;
+            color: #073B4C;
+        }
+        .pheno-arrow {
+            color: #118AB2;
+        }
+        .species-card h3 {
+            color: #118AB2;
+        }
+        .timeline-bar-leaf { background-color: #06D6A0; }
+        .timeline-bar-flower { background-color: #FF6B6B; }
+        .timeline-bar-senescence { background-color: #FFD166; }
+
+        /* HTML Comments for planning as requested */
+        /* Narrative Plan:
+            1. Hero/Intro: Significance of saltmarshes, phenology, climate drivers.
+            2. Understanding Phenology: Definitions, cues.
+            3. Species Profiles: Limonium, Armeria, Salicornia, Puccinellia - basic phenology.
+            4. Temperature Impacts: Green-up, flowering, senescence.
+            5. Precipitation Impacts: Drought, increased rain, salinity.
+            6. Interactive Effects: Temp + Precip.
+            7. Ecosystem Consequences: Biomass, Carbon cycling (SOC, GHG).
+            8. Knowledge Gaps: Key research needs.
+            9. Conclusion (implied): Importance of study.
+        */
+        /* Visualization Choices:
+            - Big Numbers (Text): Inform - Key stats. (NO SVG)
+            - Phenophase Cycle (HTML/CSS): Organize - Flow Chart style. (NO SVG, NO MERMAID)
+            - Species Phenology Bars (HTML/CSS): Change/Compare - Simplified Timeline. (NO SVG)
+            - Green-up Trend (Chart.js Line): Change - Line Chart. (Canvas, NO SVG)
+            - Biomass Comparison (Chart.js Bar): Compare - Bar Chart. (Canvas, NO SVG)
+            - Carbon Cycle Components (Chart.js Donut): Compare - Donut Chart. (Canvas, NO SVG)
+            - GHG Fluxes Diagram (HTML/CSS + Unicode): Organize - Simple Diagram. (NO SVG)
+            - Knowledge Gaps (HTML List): Organize - List. (NO SVG)
+            - Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this output.
+        */
+        /* Chosen Color Palette: Energetic & Playful (#FF6B6B, #FFD166, #06D6A0, #118AB2, #073B4C) */
+    </style>
+</head>
+<body class="text-[#073B4C]">
+
+    <header class="bg-[#118AB2] text-white py-8 shadow-lg">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold">The Influence of Temperature and Precipitation on Saltmarsh Phenology</h1>
+            <p class="mt-2 text-lg md:text-xl">Impacts on Biomass and Carbon Cycling in UK & Ireland Ecosystems</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+
+        <section id="introduction" class="mb-12 card p-6">
+            <h2 class="text-3xl font-bold mb-6 section-title">1. Saltmarshes: Vital Ecosystems Under Pressure</h2>
+            <p class="mb-4 text-lg">Saltmarshes are dynamic and highly productive intertidal ecosystems, critical interfaces between terrestrial and marine environments. They provide crucial ecosystem services, including coastal protection, significant carbon sequestration, nutrient cycling, and essential habitat for diverse flora and fauna. The dual exposure to terrestrial climatic drivers (air temperature, precipitation) and marine influences (sea-level rise, salinity) creates a uniquely complex environment.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mt-6">
+                <div class="p-4 bg-gray-50 rounded-lg shadow">
+                    <span class="text-4xl">🌊</span>
+                    <h3 class="text-xl font-semibold mt-2 text-[#118AB2]">Coastal Defence</h3>
+                    <p class="text-sm text-gray-700">Attenuate wave energy, protecting shorelines.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow">
+                    <span class="text-4xl">🌲</span>
+                    <h3 class="text-xl font-semibold mt-2 text-[#06D6A0]">Carbon Sink ("Blue Carbon")</h3>
+                    <p class="text-sm text-gray-700">Sequester large amounts of atmospheric carbon.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow">
+                    <span class="text-4xl">🦋</span>
+                    <h3 class="text-xl font-semibold mt-2 text-[#FF6B6B]">Biodiversity Hotspot</h3>
+                    <p class="text-sm text-gray-700">Provide habitat for specialized plants and animals.</p>
+                </div>
+            </div>
+            <p class="mt-6 text-lg">Plant phenology, the timing of life cycle events like green-up and flowering, is a sensitive indicator of climate change. Alterations can impact growing season length, primary productivity, biomass, and carbon cycling, with cascading effects on the ecosystem.</p>
+        </section>
+
+        <section id="phenology-basics" class="mb-12 card p-6">
+            <h2 class="text-3xl font-bold mb-6 section-title">2. Understanding Saltmarsh Plant Phenology</h2>
+            <p class="mb-4 text-lg">The annual cycle of saltmarsh plants is marked by distinct phenological stages, primarily driven by environmental cues. These stages determine the growing season and overall ecosystem productivity.</p>
+            <div class="flex flex-col md:flex-row justify-around items-center space-y-4 md:space-y-0 md:space-x-4 my-6">
+                <div class="text-center p-3 rounded-lg pheno-stage w-full md:w-1/4">
+                    <span class="text-3xl">🌱</span>
+                    <h4 class="font-semibold text-lg">Green-up</h4>
+                    <p class="text-sm">Initiation of new leaf development in spring.</p>
+                </div>
+                <div class="pheno-arrow text-4xl hidden md:block">&rarr;</div>
+                <div class="text-center p-3 rounded-lg pheno-stage w-full md:w-1/4">
+                    <span class="text-3xl">🌸</span>
+                    <h4 class="font-semibold text-lg">Maturity</h4>
+                    <p class="text-sm">Vegetative growth completion, flowering, seed development.</p>
+                </div>
+                <div class="pheno-arrow text-4xl hidden md:block">&rarr;</div>
+                <div class="text-center p-3 rounded-lg pheno-stage w-full md:w-1/4">
+                    <span class="text-3xl">🍂</span>
+                    <h4 class="font-semibold text-lg">Senescence</h4>
+                    <p class="text-sm">Physiological decline, leaf discoloration, nutrient resorption.</p>
+                </div>
+                <div class="pheno-arrow text-4xl hidden md:block">&rarr;</div>
+                <div class="text-center p-3 rounded-lg pheno-stage w-full md:w-1/4">
+                    <span class="text-3xl">❄️</span>
+                    <h4 class="font-semibold text-lg">Dormancy</h4>
+                    <p class="text-sm">Winter period of minimal or no growth.</p>
+                </div>
+            </div>
+            <p class="text-lg mt-4">Key Cues Triggering Phenological Stages:</p>
+            <ul class="list-disc list-inside mt-2 space-y-1 text-gray-800">
+                <li><span class="font-semibold text-[#FF6B6B]">Temperature:</span> A primary driver, especially for spring green-up (e.g., Growing Degree Days). Soil temperature can be more critical than air temperature.</li>
+                <li><span class="font-semibold text-[#FFD166]">Photoperiod:</span> Day length influences timing, particularly for conservative species.</li>
+                <li><span class="font-semibold text-[#118AB2]">Precipitation & Soil Moisture:</span> Modulates growth rates and can trigger or delay senescence. Interacts significantly with salinity.</li>
+                <li><span class="font-semibold text-[#06D6A0]">Chilling Requirements (Vernalization):</span> Some species require a cold period for flowering.</li>
+            </ul>
+        </section>
+
+        <section id="key-species" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 section-title text-center">3. Phenological Profiles of Key UK & Ireland Saltmarsh Species</h2>
+            <p class="text-lg mb-6 text-center">The four key species/genera exhibit distinct phenological patterns and ecological strategies.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="species-card card p-6">
+                    <h3 class="text-2xl font-semibold mb-3"><em>Limonium humile</em></h3>
+                    <p class="text-sm mb-1"><strong>Life Cycle:</strong> Perennial herb</p>
+                    <p class="text-sm mb-1"><strong>Green-up:</strong> Mar/Apr - Nov/Dec</p>
+                    <p class="text-sm mb-1"><strong>Flowering:</strong> Jul - Sep (Peak Aug)</p>
+                    <p class="text-sm mb-3"><strong>Dormancy:</strong> Winter (basal rosette may persist)</p>
+                    <div class="w-full h-2.5 bg-gray-200 rounded-full mt-2">
+                        <div class="h-2.5 rounded-full timeline-bar-leaf" style="width: 75%; margin-left:16.6%"></div>
+                        <div class="h-2.5 rounded-full timeline-bar-flower relative bottom-[10px]" style="width: 25%; margin-left:50%"></div>
+                    </div>
+                     <p class="text-xs text-gray-500 mt-1">Simplified Phenology: Green (Leaf), Red (Flower)</p>
+                </div>
+                <div class="species-card card p-6">
+                    <h3 class="text-2xl font-semibold mb-3"><em>Armeria maritima</em></h3>
+                    <p class="text-sm mb-1"><strong>Life Cycle:</strong> Evergreen perennial</p>
+                    <p class="text-sm mb-1"><strong>Green-up:</strong> Evergreen, new growth spring</p>
+                    <p class="text-sm mb-1"><strong>Flowering:</strong> Apr - Oct (Main bloom May-Jun)</p>
+                    <p class="text-sm mb-3"><strong>Dormancy:</strong> Reduced winter activity</p>
+                     <div class="w-full h-2.5 bg-gray-200 rounded-full mt-2">
+                        <div class="h-2.5 rounded-full timeline-bar-leaf" style="width: 100%;"></div>
+                        <div class="h-2.5 rounded-full timeline-bar-flower relative bottom-[10px]" style="width: 58.3%; margin-left:25%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Simplified Phenology: Green (Leaf), Red (Flower)</p>
+                </div>
+                <div class="species-card card p-6">
+                    <h3 class="text-2xl font-semibold mb-3"><em>Salicornia spp.</em></h3>
+                    <p class="text-sm mb-1"><strong>Life Cycle:</strong> Annual herb</p>
+                    <p class="text-sm mb-1"><strong>Green-up (Germination):</strong> Spring (cued by low salinity)</p>
+                    <p class="text-sm mb-1"><strong>Flowering:</strong> Jul - Oct</p>
+                    <p class="text-sm mb-3"><strong>Senescence:</strong> Autumn (turns red), dies after seeding</p>
+                    <div class="w-full h-2.5 bg-gray-200 rounded-full mt-2">
+                        <div class="h-2.5 rounded-full timeline-bar-leaf" style="width: 50%; margin-left:25%"></div>
+                        <div class="h-2.5 rounded-full timeline-bar-flower relative bottom-[10px]" style="width: 33.3%; margin-left:50%"></div>
+                        <div class="h-2.5 rounded-full timeline-bar-senescence relative bottom-[20px]" style="width: 25%; margin-left:75%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Simplified Phenology: Green (Leaf), Red (Flower), Yellow (Senescence)</p>
+                </div>
+                <div class="species-card card p-6">
+                    <h3 class="text-2xl font-semibold mb-3"><em>Puccinellia spp.</em></h3>
+                    <p class="text-sm mb-1"><strong>Life Cycle:</strong> Perennial grass</p>
+                    <p class="text-sm mb-1"><strong>Green-up:</strong> Growth from Apr (remains green over winter)</p>
+                    <p class="text-sm mb-1"><strong>Flowering:</strong> Jul - Aug (Peak growth Aug-Oct)</p>
+                    <p class="text-sm mb-3"><strong>Dormancy:</strong> Winter growth cessation</p>
+                    <div class="w-full h-2.5 bg-gray-200 rounded-full mt-2">
+                        <div class="h-2.5 rounded-full timeline-bar-leaf" style="width: 100%;"></div>
+                         <div class="h-2.5 rounded-full timeline-bar-flower relative bottom-[10px]" style="width: 16.6%; margin-left:50%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Simplified Phenology: Green (Leaf), Red (Flower)</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="temperature-impacts" class="mb-12 card p-6">
+            <h2 class="text-3xl font-bold mb-6 section-title">4. Influence of Temperature Variations 🌡️</h2>
+            <p class="mb-4 text-lg">Rising temperatures significantly alter saltmarsh phenology. Warmer conditions generally accelerate plant development, but responses vary by stage and species, and extreme events pose additional risks.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-[#FF6B6B] mb-2">Earlier Spring Green-up</h3>
+                    <p class="mb-2">Warming trends are leading to an earlier onset of spring growth. For example, studies on *Spartina alterniflora* show an ~11-day green-up advancement with 1.7°C winter soil warming.</p>
+                    <div class="chart-wrapper">
+                        <canvas id="greenUpChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Illustrative trend: Earlier green-up observed with warming decades.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#FF6B6B] mb-2">Altered Flowering & Maturity</h3>
+                    <p class="mb-2">Warming typically advances flowering times (e.g., 2-6 days earlier per 1°C increase). However, species like *Limonium* may require winter chilling (vernalization); warmer winters could disrupt this, potentially delaying or reducing flowering intensity even if spring is warm.</p>
+                    <h3 class="text-xl font-semibold text-[#FF6B6B] mt-4 mb-2">Changes in Senescence & Dormancy</h3>
+                    <p class="mb-2">Warmer autumns can delay leaf senescence, extending the growing season. Paradoxically, very early and vigorous spring growth, if followed by stress, might trigger earlier senescence. Extreme temperatures (heatwaves, unseasonal frosts) can cause acute stress, overriding gradual warming effects and impacting overwinter survival or damaging new growth.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="precipitation-impacts" class="mb-12 card p-6">
+            <h2 class="text-3xl font-bold mb-6 section-title">5. Influence of Precipitation Variations 💧</h2>
+            <p class="mb-4 text-lg">Changes in precipitation patterns (amount, timing, intensity) directly affect soil moisture and, critically, soil salinity, with complex consequences for phenology.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-[#118AB2] mb-2">Drought Conditions</h3>
+                    <p class="mb-2">Reduced rainfall, especially with high temperatures, increases soil salinity and water stress. This can:
+                        <ul class="list-disc list-inside ml-4">
+                            <li>Reduce plant growth and biomass.</li>
+                            <li>Delay green-up or induce premature senescence.</li>
+                            <li>Inhibit germination (e.g., *Salicornia* needs lower salinity).</li>
+                        </ul>
+                        However, in some waterlogged lower marsh zones, drought can paradoxically alleviate anoxic stress, sometimes benefiting certain species if salinity doesn't become too extreme.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#118AB2] mb-2">Increased Rainfall & Flooding</h3>
+                    <p class="mb-2">Heavy or prolonged rainfall can:
+                        <ul class="list-disc list-inside ml-4">
+                            <li>Temporarily decrease soil salinity, benefiting less salt-tolerant species or aiding germination.</li>
+                            <li>Lead to waterlogging and anoxic soil conditions if drainage is poor, stressing plants not adapted to such conditions.</li>
+                            <li>Experimental doubling of precipitation decreased biomass in some *Spartina* communities.</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                 <h3 class="text-xl font-semibold text-[#073B4C] mb-2 text-center">Interactive Effects: Temperature & Precipitation</h3>
+                 <p class="text-center">The combined effects are often non-additive. Warming coupled with drought typically exacerbates water and salinity stress. For example, *Salicornia veneta* biomass increased under warmer, drier conditions in one Mediterranean study, highlighting species-specific responses. The sequence and timing of warm/cool and wet/dry periods throughout the year are crucial.</p>
+            </div>
+        </section>
+
+        <section id="ecosystem-consequences" class="mb-12 card p-6">
+            <h2 class="text-3xl font-bold mb-6 section-title">6. Consequences for Biomass Production & Carbon Cycling</h2>
+            <p class="mb-4 text-lg">Phenological shifts driven by climate change have profound implications for the overall functioning of saltmarsh ecosystems, particularly their ability to produce biomass and sequester carbon.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold text-[#06D6A0] mb-2">Biomass Accumulation</h3>
+                    <p class="mb-2">An extended growing season (earlier green-up, delayed senescence) generally offers a longer window for photosynthesis, potentially leading to greater Net Primary Productivity (NPP) and biomass. However, this isn't always linear; nutrient limitation or mid-season stresses (drought, heat) can counteract these gains.</p>
+                    <div class="chart-wrapper">
+                        <canvas id="biomassChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Illustrative: Potential changes in annual biomass under different climate scenarios.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#06D6A0] mb-2">Carbon Sequestration & Soil Organic Carbon (SOC)</h3>
+                    <p class="mb-2">Saltmarshes are vital "blue carbon" sinks. Changes in NPP directly impact atmospheric carbon uptake. However, net carbon storage is also affected by:
+                        <ul class="list-disc list-inside ml-4">
+                            <li><span class="font-semibold">Decomposition Rates:</span> Warming often accelerates decomposition, releasing $CO_2$.</li>
+                            <li><span class="font-semibold">Biomass Allocation:</span> Shifts between aboveground and belowground biomass affect carbon transfer to stable soil pools. Belowground carbon is more stable.</li>
+                        </ul>
+                    </p>
+                    <div class="chart-wrapper mt-4">
+                        <canvas id="carbonCycleChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Illustrative: Key components of saltmarsh carbon budget.</p>
+                </div>
+            </div>
+            <div class="mt-8 p-4 bg-green-50 rounded-lg">
+                <h3 class="text-xl font-semibold text-[#073B4C] mb-2 text-center">Greenhouse Gas Fluxes ($CO_2$, $CH_4$, $N_2O$)</h3>
+                <p class="text-center">Phenological shifts alter litter input (timing, quantity, quality), affecting microbial activity and thus the release or uptake of $CO_2$, methane ($CH_4$), and nitrous oxide ($N_2O$). For instance, dormant season $CO_2$ emissions can be significant and may increase with warming.</p>
+                <div class="flex justify-around mt-4 text-center">
+                    <div><span class="text-2xl">💨</span> $CO_2$ <span id="co2_arrow" class="text-[#FF6B6B]">↑</span></div>
+                    <div><span class="text-2xl">💨</span> $CH_4$ <span id="ch4_arrow" class="text-[#FF6B6B]">↕</span></div>
+                    <div><span class="text-2xl">💨</span> $N_2O$ <span id="n2o_arrow" class="text-[#FF6B6B]">↕</span></div>
+                </div>
+                <p class="text-xs text-center text-gray-500 mt-1">Arrows indicate potential for increased or variable fluxes under changing conditions.</p>
+            </div>
+        </section>
+
+        <section id="knowledge-gaps" class="mb-12 card p-6">
+            <h2 class="text-3xl font-bold mb-6 section-title">7. Critical Knowledge Gaps & Future Research Directions 🔬</h2>
+            <p class="mb-4 text-lg">While much is known, significant research gaps remain in understanding the nuanced responses of UK & Ireland saltmarsh species to climate change. Addressing these is crucial for effective conservation and management.</p>
+            <ul class="list-disc list-inside space-y-2 text-gray-800">
+                <li><span class="font-semibold text-[#FFD166]">Quantitative Phenological Responses:</span> Precise data are scarce for *Limonium humile, Armeria maritima, Salicornia spp.,* and *Puccinellia spp.* regarding their specific responses to temperature and precipitation gradients, including extremes.</li>
+                <li><span class="font-semibold text-[#FFD166]">Interactive Effects:</span> The combined impacts of temperature and precipitation changes on the phenology and biomass of these species in the UK/Ireland context are poorly understood.</li>
+                <li><span class="font-semibold text-[#FFD166]">Linkages to Carbon Cycling:</span> Direct empirical evidence linking phenological shifts in these species to specific changes in carbon sequestration, SOC dynamics, litter decomposition, and GHG fluxes is limited.</li>
+                <li><span class="font-semibold text-[#FFD166]">Plasticity vs. Adaptation:</span> The extent to which observed changes are due to phenotypic plasticity versus genetic adaptation in UK/Irish populations is largely unknown.</li>
+                <li><span class="font-semibold text-[#FFD166]">Altered Inundation Regimes:</span> The interaction of temperature/precipitation with sea-level rise and changing tidal patterns on phenology needs further integration.</li>
+            </ul>
+            <p class="mt-4 text-lg">Future research should prioritize targeted long-term monitoring, integrated experimental studies, investigations into adaptive capacity, and direct quantification of links between phenology and carbon cycling dynamics, especially considering extreme events and sea-level rise.</p>
+        </section>
+
+    </main>
+
+    <footer class="bg-[#073B4C] text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm">&copy; 2024 Saltmarsh Phenology Research Synthesis. Infographic based on the Deep Research report.</p>
+            <p class="text-xs mt-1">This infographic is for illustrative and educational purposes.</p>
+        </div>
+    </footer>
+
+    <script>
+        function wrapLabels(label, maxWidth) {
+            if (typeof label !== 'string' || label.length <= maxWidth) {
+                return label;
+            }
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                if ((currentLine + word).length > maxWidth && currentLine.length > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            });
+            lines.push(currentLine.trim());
+            return lines;
+        }
+
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+
+        const commonChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#073B4C' // Dark Blue/Teal for legend text
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
+                    },
+                    titleColor: '#FFFFFF', // White tooltip title
+                    bodyColor: '#FFFFFF', // White tooltip body
+                    backgroundColor: '#073B4C' // Dark blue tooltip background
+                }
+            },
+            scales: {
+                y: {
+                    ticks: { color: '#073B4C' }, // Dark Blue/Teal for y-axis ticks
+                    grid: { color: '#E0E0E0' }    // Light grey grid lines
+                },
+                x: {
+                    ticks: { color: '#073B4C' }, // Dark Blue/Teal for x-axis ticks
+                    grid: { display: false }     // No vertical grid lines for cleaner look
+                }
+            }
+        };
+        
+        // Energetic & Playful Palette
+        const colorPalette = {
+            red: '#FF6B6B',
+            yellow: '#FFD166',
+            green: '#06D6A0',
+            blue: '#118AB2',
+            darkBlueTeal: '#073B4C'
+        };
+
+        // Chart 1: Green-Up Chart (Line Chart)
+        const greenUpCtx = document.getElementById('greenUpChart').getContext('2d');
+        new Chart(greenUpCtx, {
+            type: 'line',
+            data: {
+                labels: ['1980s', '1990s', '2000s', '2010s', '2020s (Projected)'].map(l => wrapLabels(l,10)),
+                datasets: [{
+                    label: 'Day of Year for Green-up Onset',
+                    data: [100, 95, 92, 88, 85], // Illustrative data showing earlier green-up
+                    borderColor: colorPalette.green,
+                    backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: { ...commonChartOptions }
+        });
+
+        // Chart 2: Biomass Chart (Bar Chart)
+        const biomassCtx = document.getElementById('biomassChart').getContext('2d');
+        new Chart(biomassCtx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    wrapLabels('Current Conditions', 16), 
+                    wrapLabels('Warmer Scenario', 16), 
+                    wrapLabels('Warmer & Drier Scenario', 16),
+                    wrapLabels('Warmer & Wetter Scenario', 16)
+                ],
+                datasets: [{
+                    label: 'Relative Annual Aboveground Biomass',
+                    data: [100, 115, 90, 105], // Illustrative data
+                    backgroundColor: [colorPalette.blue, colorPalette.green, colorPalette.yellow, colorPalette.red],
+                }]
+            },
+            options: { ...commonChartOptions, indexAxis: 'y' } // Horizontal bar chart for better label display
+        });
+
+        // Chart 3: Carbon Cycle Chart (Donut Chart)
+        const carbonCycleCtx = document.getElementById('carbonCycleChart').getContext('2d');
+        new Chart(carbonCycleCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    wrapLabels('Net Primary Production (NPP)', 16), 
+                    wrapLabels('Decomposition Loss', 16), 
+                    wrapLabels('Soil Organic Carbon (SOC) Input', 16),
+                    wrapLabels('Other Fluxes', 16)
+                ],
+                datasets: [{
+                    label: 'Relative Carbon Flux/Storage',
+                    data: [60, 25, 10, 5], // Illustrative proportions
+                    backgroundColor: [colorPalette.green, colorPalette.red, colorPalette.blue, colorPalette.yellow],
+                    hoverOffset: 4
+                }]
+            },
+            options: { ...commonChartOptions, scales: { x: {display:false}, y: {display:false} } }
+        });
+
+    </script>
+</body>
+</html>
